@@ -3,18 +3,22 @@ import SwiftData
 
 @Model
 final class Outfit {
-    var id: UUID
+    var id: UUID = UUID()
     var name: String?
-    @Relationship(deleteRule: .nullify) var items: [ClothingItem]
-    @Relationship(deleteRule: .cascade) var snapshots: [OutfitItemSnapshot]
-    @Attribute(.externalStorage) var previewImageData: Data
-    var systemScore: Int
-    var finalScore: Int
-    var createdAt: Date
+    var scene: String?
+    var notes: String?
+    @Relationship(deleteRule: .nullify) var items: [ClothingItem] = []
+    @Relationship(deleteRule: .cascade) var snapshots: [OutfitItemSnapshot] = []
+    @Attribute(.externalStorage) var previewImageData: Data = Data()
+    var systemScore: Int = 0
+    var finalScore: Int = 0
+    var createdAt: Date = Date.now
 
     init(
         id: UUID = UUID(),
         name: String? = nil,
+        scene: String? = nil,
+        notes: String? = nil,
         items: [ClothingItem],
         previewImageData: Data,
         systemScore: OutfitScore,
@@ -26,6 +30,8 @@ final class Outfit {
 
         self.id = id
         self.name = name
+        self.scene = scene
+        self.notes = notes
         self.items = items
         self.snapshots = items.map(OutfitItemSnapshot.init)
         self.previewImageData = previewImageData
@@ -47,6 +53,10 @@ final class Outfit {
     }
 
     var displayName: String {
+        if let scene, !scene.isEmpty {
+            return scene
+        }
+
         if let name, !name.isEmpty {
             return name
         }

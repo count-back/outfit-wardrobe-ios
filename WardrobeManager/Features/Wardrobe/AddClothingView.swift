@@ -22,6 +22,7 @@ struct AddClothingView: View {
     @State private var isPresentingPhotoLibrary = false
     @State private var isProcessingImage = false
     @State private var imageProcessingStatus: ImageProcessingStatus?
+    @State private var saveSuccessMessage: String?
     @State private var errorMessage: String?
 
     private var canSave: Bool {
@@ -34,6 +35,26 @@ struct AddClothingView: View {
 
     var body: some View {
         Form {
+            if let saveSuccessMessage {
+                Section("保存结果") {
+                    HStack(spacing: 12) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(saveSuccessMessage)
+                                .font(.subheadline.weight(.semibold))
+                            Text("表单已清空，可以继续录入下一件。")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer()
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+
             Section("衣物图片") {
                 VStack(spacing: 14) {
                     preview
@@ -107,7 +128,7 @@ struct AddClothingView: View {
             }
 
             ToolbarItem(placement: .topBarTrailing) {
-                Button("保存") {
+                Button("保存并继续") {
                     saveItem()
                 }
                 .disabled(!canSave)
@@ -230,10 +251,31 @@ struct AddClothingView: View {
 
         do {
             try modelContext.save()
-            dismiss()
+            errorMessage = nil
+            clearFormForNextItem()
+            saveSuccessMessage = "衣物已保存"
         } catch {
+            saveSuccessMessage = nil
             errorMessage = "衣物保存失败，请稍后再试。"
         }
+    }
+
+    private func clearFormForNextItem() {
+        name = ""
+        category = .top
+        color = ""
+        style = ""
+        location = ""
+        season = .allSeason
+        tagsText = ""
+        purchasePriceText = ""
+        rawImage = nil
+        processedImageData = nil
+        selectedImageVersion = .original
+        isPresentingCamera = false
+        isPresentingPhotoLibrary = false
+        isProcessingImage = false
+        imageProcessingStatus = nil
     }
 }
 

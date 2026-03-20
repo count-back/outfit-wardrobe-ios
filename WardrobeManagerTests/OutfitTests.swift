@@ -14,6 +14,8 @@ final class OutfitTests: XCTestCase {
         )
 
         let outfit = Outfit(
+            scene: "周五晚餐约会",
+            notes: "搭配浅色外套会更稳妥。",
             items: [item],
             previewImageData: Data(),
             systemScore: OutfitScore(
@@ -32,6 +34,9 @@ final class OutfitTests: XCTestCase {
         XCTAssertEqual(outfit.finalScore, 86)
         XCTAssertEqual(outfit.scoreAdjustment, 8)
         XCTAssertEqual(outfit.finalScoreLabel, .harmonious)
+        XCTAssertEqual(outfit.scene, "周五晚餐约会")
+        XCTAssertEqual(outfit.notes, "搭配浅色外套会更稳妥。")
+        XCTAssertEqual(outfit.displayName, "周五晚餐约会")
     }
 
     func testOutfitDefaultsFinalScoreToSystemScore() {
@@ -63,5 +68,6 @@ final class OutfitTests: XCTestCase {
         XCTAssertEqual(outfit.finalScore, 64)
         XCTAssertEqual(outfit.scoreAdjustment, 0)
         XCTAssertEqual(outfit.finalScoreComment, "有一点混搭感，但整体仍然可接受。")
+        XCTAssertEqual(outfit.displayName, "黑西裤")
     }
 }

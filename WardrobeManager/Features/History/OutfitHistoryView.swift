@@ -13,18 +13,37 @@ struct OutfitHistoryView: View {
                     systemImage: "clock.badge.xmark"
                 )
             } else {
-                List(outfits) { outfit in
-                    NavigationLink {
-                        OutfitDetailView(outfit: outfit)
-                    } label: {
-                        OutfitHistoryRow(outfit: outfit)
+                List {
+                    Section {
+                        ForEach(outfits) { outfit in
+                            NavigationLink {
+                                OutfitDetailView(outfit: outfit)
+                            } label: {
+                                OutfitHistoryRow(outfit: outfit)
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                        }
+                    } header: {
+                        historyHeader
                     }
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
                 }
                 .listStyle(.plain)
             }
         }
         .navigationTitle("搜配记录")
+    }
+
+    private var historyHeader: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("\(outfits.count) 套记录")
+                .font(.largeTitle.weight(.bold))
+
+            Text("按时间倒序排列，先看最终分数，再看当时的单品构成。")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 8)
+        .textCase(nil)
     }
 }

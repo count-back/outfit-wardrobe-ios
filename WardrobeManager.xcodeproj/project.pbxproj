@@ -22,6 +22,7 @@
 		8963BD39B239C00878007555 /* Date+RelativeDays.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5875EDFDE8073EEA4F76B3 /* Date+RelativeDays.swift */; };
 		8D709E187FED6C40183BEA0F /* Season.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD40185F9EA2E81640603BB1 /* Season.swift */; };
 		970E0323776DA3B51255B100 /* AppContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6223EC5DA104BF388EC9F977 /* AppContainer.swift */; };
+		990254E96CD68D4319C0AF75 /* OutfitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A599DEFCD83E12E3139BFD2B /* OutfitTests.swift */; };
 		A04E954020840D586AE3D2BE /* OutfitPreviewComposer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00D6A08E5C67293010FAEA3E /* OutfitPreviewComposer.swift */; };
 		C3E343CDB07A896224BC8378 /* ClothingDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58F0AB6A5D704EDF8A999279 /* ClothingDetailView.swift */; };
 		C52BDBAE6A9D18E3D2A9A7BC /* ClothingCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04D5E96C403A02615B0EA121 /* ClothingCategory.swift */; };
@@ -69,6 +70,7 @@
 		9016E080BCAC35DB84C23F7E /* AddClothingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddClothingView.swift; sourceTree = "<group>"; };
 		94D1D0B77B1EB172393D91C4 /* OutfitScorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutfitScorer.swift; sourceTree = "<group>"; };
 		9526C14B0F3490AC2D1ECCDF /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
+		A599DEFCD83E12E3139BFD2B /* OutfitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutfitTests.swift; sourceTree = "<group>"; };
 		B33BDAF8828CEFD6ABB5A393 /* Outfit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Outfit.swift; sourceTree = "<group>"; };
 		BD40185F9EA2E81640603BB1 /* Season.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Season.swift; sourceTree = "<group>"; };
 		BE0FB96DBB51A45A0DD5D32F /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
@@ -173,6 +175,7 @@
 			isa = PBXGroup;
 			children = (
 				2DC7141B05B77F68197E79C0 /* OutfitScorerTests.swift */,
+				A599DEFCD83E12E3139BFD2B /* OutfitTests.swift */,
 			);
 			path = WardrobeManagerTests;
 			sourceTree = "<group>";
@@ -344,6 +347,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB2D9F78F78D408C169696AE /* OutfitScorerTests.swift in Sources */,
+				990254E96CD68D4319C0AF75 /* OutfitTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -506,6 +510,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -513,6 +518,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zjy.WardrobeManagerTests;
+				PRODUCT_NAME = WardrobeManagerTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WardrobeManager.app/WardrobeManager";
@@ -523,6 +529,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -530,6 +537,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zjy.WardrobeManagerTests;
+				PRODUCT_NAME = WardrobeManagerTests;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WardrobeManager.app/WardrobeManager";

@@ -16,6 +16,8 @@ struct OutfitBuilderView: View {
     @State private var generatedPreviewImageData: Data?
     @State private var generatedSystemScore: OutfitScore?
     @State private var editableScore = 0
+    @State private var sceneText = ""
+    @State private var notesText = ""
 
     private var selectedItems: [ClothingItem] {
         [topItem, bottomItem, outerwearItem, shoesItem, accessoryItem].compactMap { $0 }
@@ -33,6 +35,7 @@ struct OutfitBuilderView: View {
         ScrollView {
             VStack(spacing: 20) {
                 selectionSection
+                sceneSection
                 previewSection
                 if let generatedSystemScore {
                     scoreSection(score: generatedSystemScore)
@@ -226,6 +229,40 @@ struct OutfitBuilderView: View {
         }
     }
 
+    private var sceneSection: some View {
+        SectionCard(title: "场景与备注") {
+            VStack(alignment: .leading, spacing: 12) {
+                TextField("场景，例如：周末约会 / 通勤上班", text: $sceneText)
+                    .textFieldStyle(.roundedBorder)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("备注")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+
+                    ZStack(alignment: .topLeading) {
+                        TextEditor(text: $notesText)
+                            .frame(minHeight: 110)
+                            .padding(4)
+
+                        if notesText.isEmpty {
+                            Text("例如：需要搭配浅色包包，或者下次试试加外套。")
+                                .foregroundStyle(.secondary.opacity(0.7))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 12)
+                                .allowsHitTesting(false)
+                        }
+                    }
+                    .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                }
+
+                Text("场景会作为这套穿搭的标题优先展示，备注只保存不占标题位。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
     private func selectionRow(
         title: String,
         item: ClothingItem?,
@@ -294,6 +331,8 @@ struct OutfitBuilderView: View {
         }
 
         let outfit = Outfit(
+            scene: trimmedScene,
+            notes: trimmedNotes,
             items: selectedItems,
             previewImageData: generatedPreviewImageData,
             systemScore: generatedSystemScore,
@@ -328,5 +367,15 @@ struct OutfitBuilderView: View {
         let score = appContainer.scorer.score(items: selectedItems)
         generatedSystemScore = score
         editableScore = score.total
+    }
+
+    private var trimmedScene: String? {
+        let value = sceneText.trimmingCharacters(in: .whitespacesAndNewlines)
+        return value.isEmpty ? nil : value
+    }
+
+    private var trimmedNotes: String? {
+        let value = notesText.trimmingCharacters(in: .whitespacesAndNewlines)
+        return value.isEmpty ? nil : value
     }
 }
