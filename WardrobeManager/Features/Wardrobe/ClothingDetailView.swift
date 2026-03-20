@@ -5,6 +5,7 @@ struct ClothingDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     let item: ClothingItem
+    @State private var isPresentingEditSheet = false
     @State private var isShowingDeleteConfirmation = false
 
     var body: some View {
@@ -26,6 +27,11 @@ struct ClothingDetailView: View {
             Button("取消", role: .cancel) {}
         } message: {
             Text("删除后无法恢复。")
+        }
+        .sheet(isPresented: $isPresentingEditSheet) {
+            NavigationStack {
+                AddClothingView(mode: .edit(item))
+            }
         }
     }
 
@@ -57,6 +63,11 @@ struct ClothingDetailView: View {
     private var actionSection: some View {
         SectionCard(title: "操作") {
             VStack(spacing: 12) {
+                Button("编辑信息") {
+                    isPresentingEditSheet = true
+                }
+                .buttonStyle(.bordered)
+
                 Button("今天穿了") {
                     item.lastWornDate = .now
                     item.wearCount += 1
