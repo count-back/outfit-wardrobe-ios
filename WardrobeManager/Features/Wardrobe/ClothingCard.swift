@@ -10,7 +10,7 @@ struct ClothingCard: View {
                     .fill(Color(.secondarySystemBackground))
                     .frame(height: 180)
                     .overlay {
-                        if let image = item.imageData.swiftUIImage {
+                        if let image = item.thumbnailData?.swiftUIImage ?? item.imageData.swiftUIImage {
                             image
                                 .resizable()
                                 .scaledToFit()

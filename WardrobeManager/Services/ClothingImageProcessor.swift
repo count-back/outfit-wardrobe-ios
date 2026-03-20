@@ -6,7 +6,13 @@ import Vision
 
 struct ProcessedClothingImage {
     let data: Data
+    let thumbnailData: Data
     let didRemoveBackground: Bool
+}
+
+struct ProcessedClothingImageAsset {
+    let data: Data
+    let thumbnailData: Data
 }
 
 struct ClothingImageProcessor {
@@ -21,23 +27,64 @@ struct ClothingImageProcessor {
         }
 
         if let cutout = processedCutout(from: visionCutout, original: normalizedImage),
-           let pngData = cutout.pngData() {
-            return ProcessedClothingImage(data: pngData, didRemoveBackground: true)
+           let asset = makeStorageAsset(from: cutout, preserveAlpha: true) {
+            return ProcessedClothingImage(
+                data: asset.data,
+                thumbnailData: asset.thumbnailData,
+                didRemoveBackground: true
+            )
         }
 
         if let fallbackCutout = processedCutout(
             from: removeFlatBackground(from: normalizedImage, luminanceThreshold: 58, colorDistanceThreshold: 110),
             original: normalizedImage
         ),
-           let pngData = fallbackCutout.pngData() {
-            return ProcessedClothingImage(data: pngData, didRemoveBackground: true)
+           let asset = makeStorageAsset(from: fallbackCutout, preserveAlpha: true) {
+            return ProcessedClothingImage(
+                data: asset.data,
+                thumbnailData: asset.thumbnailData,
+                didRemoveBackground: true
+            )
         }
 
-        guard let fallback = normalizedImage.pngData() else {
+        guard let asset = makeStorageAsset(from: normalizedImage, preserveAlpha: false) else {
             throw ClothingImageProcessorError.encodingFailed
         }
 
-        return ProcessedClothingImage(data: fallback, didRemoveBackground: false)
+        return ProcessedClothingImage(
+            data: asset.data,
+            thumbnailData: asset.thumbnailData,
+            didRemoveBackground: false
+        )
+    }
+
+    func makeStorageAsset(from image: UIImage, preserveAlpha: Bool) -> ProcessedClothingImageAsset? {
+        buildStorageAsset(
+            from: image.normalizedForVision(),
+            preserveAlpha: preserveAlpha
+        )
+    }
+
+    private func buildStorageAsset(from image: UIImage, preserveAlpha: Bool) -> ProcessedClothingImageAsset? {
+        let fullImage = image.resizedToFit(maxDimension: preserveAlpha ? 1600 : 1800)
+        let thumbnailImage = image.resizedToFit(maxDimension: 360)
+
+        guard
+            let data = encode(fullImage, preserveAlpha: preserveAlpha, compressionQuality: 0.82),
+            let thumbnailData = encode(thumbnailImage, preserveAlpha: preserveAlpha, compressionQuality: 0.72)
+        else {
+            return nil
+        }
+
+        return ProcessedClothingImageAsset(data: data, thumbnailData: thumbnailData)
+    }
+
+    private func encode(_ image: UIImage, preserveAlpha: Bool, compressionQuality: CGFloat) -> Data? {
+        if preserveAlpha {
+            return image.pngData()
+        }
+
+        return image.jpegData(compressionQuality: compressionQuality)
     }
 
     private func processedCutout(from candidate: UIImage?, original: UIImage) -> UIImage? {
@@ -306,6 +353,26 @@ private struct AlphaBoundsAnalysis {
 }
 
 private extension UIImage {
+    func resizedToFit(maxDimension: CGFloat) -> UIImage {
+        let largestSide = max(size.width, size.height)
+        guard largestSide > maxDimension, largestSide > 0 else {
+            return self
+        }
+
+        let scaleRatio = maxDimension / largestSide
+        let targetSize = CGSize(
+            width: floor(size.width * scaleRatio),
+            height: floor(size.height * scaleRatio)
+        )
+        let rendererFormat = UIGraphicsImageRendererFormat.default()
+        rendererFormat.scale = 1
+        rendererFormat.opaque = false
+
+        return UIGraphicsImageRenderer(size: targetSize, format: rendererFormat).image { _ in
+            draw(in: CGRect(origin: .zero, size: targetSize))
+        }
+    }
+
     func normalizedForVision() -> UIImage {
         if imageOrientation == .up, cgImage != nil {
             return self

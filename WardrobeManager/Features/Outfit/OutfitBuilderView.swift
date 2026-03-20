@@ -73,6 +73,15 @@ struct OutfitBuilderView: View {
             generatedSystemScore = nil
             editableScore = 0
         }
+        .onAppear {
+            applyPendingReuseIfNeeded()
+        }
+        .onChange(of: appContainer.pendingOutfitReuse) { _, _ in
+            applyPendingReuseIfNeeded()
+        }
+        .onChange(of: allItems.map(\.id)) { _, _ in
+            applyPendingReuseIfNeeded()
+        }
     }
 
     private var selectionSection: some View {
@@ -377,5 +386,27 @@ struct OutfitBuilderView: View {
     private var trimmedNotes: String? {
         let value = notesText.trimmingCharacters(in: .whitespacesAndNewlines)
         return value.isEmpty ? nil : value
+    }
+
+    private func applyPendingReuseIfNeeded() {
+        guard let request = appContainer.pendingOutfitReuse else { return }
+
+        let requestedItems = request.itemIDs.compactMap { itemID in
+            allItems.first(where: { $0.id == itemID })
+        }
+
+        guard !requestedItems.isEmpty else { return }
+
+        topItem = requestedItems.first(where: { $0.category == .top })
+        bottomItem = requestedItems.first(where: { $0.category == .pants || $0.category == .skirt })
+        outerwearItem = requestedItems.first(where: { $0.category == .outerwear })
+        shoesItem = requestedItems.first(where: { $0.category == .shoes })
+        accessoryItem = requestedItems.first(where: { $0.category == .accessory })
+        sceneText = request.scene
+        notesText = request.notes
+        generatedPreviewImageData = nil
+        generatedSystemScore = nil
+        editableScore = 0
+        appContainer.pendingOutfitReuse = nil
     }
 }

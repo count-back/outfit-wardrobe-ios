@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct OutfitDetailView: View {
+    @Environment(AppContainer.self) private var appContainer
     let outfit: Outfit
 
     var body: some View {
@@ -65,6 +66,17 @@ struct OutfitDetailView: View {
                     .padding(12)
                     .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
+
+                Button("再次使用这套") {
+                    appContainer.pendingOutfitReuse = OutfitReuseRequest(
+                        itemIDs: outfit.items.map(\.id),
+                        scene: outfit.scene ?? "",
+                        notes: outfit.notes ?? ""
+                    )
+                    appContainer.selectedTab = .outfit
+                }
+                .buttonStyle(.borderedProminent)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }

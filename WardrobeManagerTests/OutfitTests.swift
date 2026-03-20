@@ -10,6 +10,7 @@ final class OutfitTests: XCTestCase {
             style: "通勤",
             location: "衣柜A",
             imageData: Data(),
+            thumbnailData: Data([1, 2, 3]),
             season: .spring
         )
 
@@ -37,6 +38,7 @@ final class OutfitTests: XCTestCase {
         XCTAssertEqual(outfit.scene, "周五晚餐约会")
         XCTAssertEqual(outfit.notes, "搭配浅色外套会更稳妥。")
         XCTAssertEqual(outfit.displayName, "周五晚餐约会")
+        XCTAssertEqual(item.thumbnailData, Data([1, 2, 3]))
     }
 
     func testOutfitDefaultsFinalScoreToSystemScore() {
