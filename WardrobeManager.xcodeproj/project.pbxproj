@@ -506,6 +506,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -513,7 +514,9 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zjy.WardrobeManagerTests;
+				PRODUCT_NAME = WardrobeManagerTests;
 				SDKROOT = iphoneos;
+				SWIFT_MODULE_NAME = WardrobeManagerTests;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WardrobeManager.app/WardrobeManager";
 			};
@@ -523,6 +526,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -530,7 +534,9 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zjy.WardrobeManagerTests;
+				PRODUCT_NAME = WardrobeManagerTests;
 				SDKROOT = iphoneos;
+				SWIFT_MODULE_NAME = WardrobeManagerTests;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WardrobeManager.app/WardrobeManager";
 			};
