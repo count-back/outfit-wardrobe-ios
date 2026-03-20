@@ -24,7 +24,7 @@ struct OutfitHistoryRow: View {
                     .lineLimit(1)
 
                 HStack(spacing: 8) {
-                    ScoreBadge(label: outfit.resolvedScoreLabel)
+                    ScoreBadge(label: outfit.finalScoreLabel)
                     Text(outfit.createdAt.formatted(date: .abbreviated, time: .omitted))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -34,12 +34,12 @@ struct OutfitHistoryRow: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 6) {
-                Text("\(outfit.score)")
+                Text("\(outfit.finalScore)")
                     .font(.title3.weight(.bold))
 
-                Circle()
-                    .fill(outfit.resolvedScoreLabel.tint)
-                    .frame(width: 10, height: 10)
+                Text("系统 \(outfit.systemScore)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(.vertical, 8)

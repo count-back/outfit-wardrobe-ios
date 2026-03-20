@@ -14,7 +14,7 @@ struct OutfitBuilderView: View {
     @State private var pickerCategory: ClothingCategory?
     @State private var savedMessageVisible = false
     @State private var generatedPreviewImageData: Data?
-    @State private var generatedScore: OutfitScore?
+    @State private var generatedSystemScore: OutfitScore?
     @State private var editableScore = 0
 
     private var selectedItems: [ClothingItem] {
@@ -26,7 +26,7 @@ struct OutfitBuilderView: View {
     }
 
     private var hasGeneratedPreview: Bool {
-        generatedPreviewImageData != nil && generatedScore != nil
+        generatedPreviewImageData != nil && generatedSystemScore != nil
     }
 
     var body: some View {
@@ -34,8 +34,8 @@ struct OutfitBuilderView: View {
             VStack(spacing: 20) {
                 selectionSection
                 previewSection
-                if let generatedScore {
-                    scoreSection(score: generatedScore)
+                if let generatedSystemScore {
+                    scoreSection(score: generatedSystemScore)
                 }
                 saveSection
             }
@@ -67,7 +67,7 @@ struct OutfitBuilderView: View {
         .animation(.smooth, value: savedMessageVisible)
         .onChange(of: selectedItems.map(\.id)) { _, _ in
             generatedPreviewImageData = nil
-            generatedScore = nil
+            generatedSystemScore = nil
             editableScore = 0
         }
     }
@@ -166,6 +166,15 @@ struct OutfitBuilderView: View {
                             .font(.subheadline.weight(.semibold))
                     }
 
+                    HStack {
+                        Text("最终保存")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                        Text("\(editableScore) 分")
+                            .font(.subheadline.weight(.semibold))
+                    }
+
                     Slider(
                         value: Binding(
                             get: { Double(editableScore) },
@@ -194,7 +203,7 @@ struct OutfitBuilderView: View {
                     }
                 }
 
-                Text("软件先给默认评分，你可以按自己的判断再调整。")
+                Text("软件先给系统默认分，你可以按自己的判断调整最终保存分数。")
                     .font(.body)
                     .foregroundStyle(.secondary)
             }
@@ -278,7 +287,7 @@ struct OutfitBuilderView: View {
 
     private func saveOutfit() {
         guard
-            let generatedScore,
+            let generatedSystemScore,
             let generatedPreviewImageData
         else {
             return
@@ -287,7 +296,7 @@ struct OutfitBuilderView: View {
         let outfit = Outfit(
             items: selectedItems,
             previewImageData: generatedPreviewImageData,
-            score: generatedScore,
+            systemScore: generatedSystemScore,
             finalScore: editableScore
         )
 
@@ -317,7 +326,7 @@ struct OutfitBuilderView: View {
 
         generatedPreviewImageData = appContainer.previewComposer.composePreview(for: selectedItems)
         let score = appContainer.scorer.score(items: selectedItems)
-        generatedScore = score
+        generatedSystemScore = score
         editableScore = score.total
     }
 }
