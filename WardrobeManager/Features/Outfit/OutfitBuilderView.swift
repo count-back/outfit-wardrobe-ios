@@ -12,7 +12,6 @@ struct OutfitBuilderView: View {
     @State private var shoesItem: ClothingItem?
     @State private var accessoryItem: ClothingItem?
     @State private var pickerCategory: ClothingCategory?
-    @State private var savedMessageVisible = false
     @State private var generatedPreviewImageData: Data?
     @State private var generatedScore: OutfitScore?
     @State private var editableScore = 0
@@ -52,19 +51,6 @@ struct OutfitBuilderView: View {
                 )
             }
         }
-        .overlay(alignment: .top) {
-            if savedMessageVisible {
-                Text("搜配记录已保存")
-                    .font(.subheadline.weight(.semibold))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(Color.green.opacity(0.92), in: Capsule())
-                    .foregroundStyle(.white)
-                    .padding(.top, 12)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-            }
-        }
-        .animation(.smooth, value: savedMessageVisible)
         .onChange(of: selectedItems.map(\.id)) { _, _ in
             generatedPreviewImageData = nil
             generatedScore = nil
@@ -295,20 +281,14 @@ struct OutfitBuilderView: View {
 
         do {
             try modelContext.save()
-            withAnimation {
-                savedMessageVisible = true
-            }
-
-            Task {
-                try? await Task.sleep(for: .seconds(1.5))
-                await MainActor.run {
-                    withAnimation {
-                        savedMessageVisible = false
-                    }
-                }
-            }
+            appContainer.showOperationFeedback(
+                OperationFeedback(message: "搜配记录已保存", style: .success)
+            )
         } catch {
-            assertionFailure("Failed to save outfit: \(error)")
+            appContainer.showOperationFeedback(
+                OperationFeedback(message: "搜配记录保存失败，请稍后再试。", style: .error),
+                autoDismissAfter: 3_000_000_000
+            )
         }
     }
 

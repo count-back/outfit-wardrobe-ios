@@ -304,9 +304,17 @@ struct AddClothingView: View {
 
         do {
             try modelContext.save()
+            appContainer.showOperationFeedback(
+                OperationFeedback(message: "衣物已保存", style: .success)
+            )
             dismiss()
         } catch {
-            errorMessage = "衣物保存失败，请稍后再试。"
+            let message = "衣物保存失败，请稍后再试。"
+            errorMessage = message
+            appContainer.showOperationFeedback(
+                OperationFeedback(message: message, style: .error),
+                autoDismissAfter: 3_000_000_000
+            )
         }
     }
 }
