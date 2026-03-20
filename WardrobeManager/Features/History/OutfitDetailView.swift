@@ -32,13 +32,17 @@ struct OutfitDetailView: View {
         SectionCard(title: "得分分析") {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
-                    Text("\(outfit.score)")
+                    Text("\(outfit.finalScore)")
                         .font(.system(size: 40, weight: .bold))
-                    ScoreBadge(label: outfit.resolvedScoreLabel)
+                    ScoreBadge(label: outfit.finalScoreLabel)
                     Spacer()
                 }
 
-                Text("这是保存这套搜配时确认下来的最终评分。")
+                detailRow(title: "系统默认", value: "\(outfit.systemScore) 分")
+                detailRow(title: "最终保存", value: "\(outfit.finalScore) 分")
+                detailRow(title: "人工调整", value: scoreAdjustmentText)
+
+                Text(outfit.finalScoreComment)
                     .font(.body)
                     .foregroundStyle(.secondary)
             }
@@ -62,5 +66,24 @@ struct OutfitDetailView: View {
                 }
             }
         }
+    }
+
+    private var scoreAdjustmentText: String {
+        let adjustment = outfit.scoreAdjustment
+        if adjustment == 0 {
+            return "未调整"
+        }
+
+        return adjustment > 0 ? "+\(adjustment) 分" : "\(adjustment) 分"
+    }
+
+    private func detailRow(title: String, value: String) -> some View {
+        HStack {
+            Text(title)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Text(value)
+        }
+        .font(.subheadline)
     }
 }

@@ -8,13 +8,8 @@ final class Outfit {
     @Relationship(deleteRule: .nullify) var items: [ClothingItem]
     @Relationship(deleteRule: .cascade) var snapshots: [OutfitItemSnapshot]
     @Attribute(.externalStorage) var previewImageData: Data
-    var score: Int
-    var scoreColor: Int
-    var scoreStyle: Int
-    var scoreSeason: Int
-    var scoreFresh: Int
-    var scoreLabel: String
-    var scoreComment: String
+    var systemScore: Int
+    var finalScore: Int
     var createdAt: Date
 
     init(
@@ -22,30 +17,33 @@ final class Outfit {
         name: String? = nil,
         items: [ClothingItem],
         previewImageData: Data,
-        score: OutfitScore,
+        systemScore: OutfitScore,
         finalScore: Int? = nil,
         createdAt: Date = .now
     ) {
-        let resolvedScore = min(max(finalScore ?? score.total, 0), 100)
-        let summary = OutfitScore.summary(for: resolvedScore)
+        let resolvedSystemScore = min(max(systemScore.total, 0), 100)
+        let resolvedFinalScore = min(max(finalScore ?? resolvedSystemScore, 0), 100)
 
         self.id = id
         self.name = name
         self.items = items
         self.snapshots = items.map(OutfitItemSnapshot.init)
         self.previewImageData = previewImageData
-        self.score = resolvedScore
-        self.scoreColor = score.color
-        self.scoreStyle = score.style
-        self.scoreSeason = score.season
-        self.scoreFresh = score.freshness
-        self.scoreLabel = summary.label.rawValue
-        self.scoreComment = summary.comment
+        self.systemScore = resolvedSystemScore
+        self.finalScore = resolvedFinalScore
         self.createdAt = createdAt
     }
 
-    var resolvedScoreLabel: ScoreLabel {
-        ScoreLabel(rawValue: scoreLabel) ?? .good
+    var finalScoreLabel: ScoreLabel {
+        OutfitScore.summary(for: finalScore).label
+    }
+
+    var finalScoreComment: String {
+        OutfitScore.summary(for: finalScore).comment
+    }
+
+    var scoreAdjustment: Int {
+        finalScore - systemScore
     }
 
     var displayName: String {
