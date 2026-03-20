@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct OutfitDetailView: View {
+    @Environment(AppContainer.self) private var appContainer
     let outfit: Outfit
 
     var body: some View {
@@ -19,11 +20,23 @@ struct OutfitDetailView: View {
 
     private var previewSection: some View {
         SectionCard(title: "搜配预览") {
-            if let image = outfit.previewImageData.swiftUIImage {
-                image
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity)
+            VStack(alignment: .leading, spacing: 14) {
+                if let image = outfit.previewImageData.swiftUIImage {
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                }
+
+                Button("再次使用这套") {
+                    appContainer.pendingOutfitReuse = OutfitReuseRequest(
+                        itemIDs: outfit.items.map(\.id)
+                    )
+                    appContainer.selectedTab = .outfit
+                }
+                .buttonStyle(.borderedProminent)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }

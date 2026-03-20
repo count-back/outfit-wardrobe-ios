@@ -22,7 +22,7 @@ struct ClothingSelectorView: View {
                         dismiss()
                     } label: {
                         HStack(spacing: 12) {
-                            if let image = item.imageData.swiftUIImage {
+                            if let image = item.thumbnailData?.swiftUIImage ?? item.imageData.swiftUIImage {
                                 image
                                     .resizable()
                                     .scaledToFit()

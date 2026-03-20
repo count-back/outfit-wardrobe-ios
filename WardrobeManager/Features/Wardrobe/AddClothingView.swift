@@ -41,6 +41,7 @@ struct AddClothingView: View {
     @State private var purchasePriceText = ""
     @State private var rawImage: UIImage?
     @State private var processedImageData: Data?
+    @State private var processedThumbnailData: Data?
     @State private var selectedImageVersion: SelectedImageVersion = .original
     @State private var isPresentingCamera = false
     @State private var isPresentingPhotoLibrary = false
@@ -71,6 +72,7 @@ struct AddClothingView: View {
             _purchasePriceText = State(initialValue: "")
             _rawImage = State(initialValue: nil)
             _processedImageData = State(initialValue: nil)
+            _processedThumbnailData = State(initialValue: nil)
             _selectedImageVersion = State(initialValue: .original)
         case let .edit(item):
             _name = State(initialValue: item.name)
@@ -87,6 +89,7 @@ struct AddClothingView: View {
             }
             _rawImage = State(initialValue: UIImage(data: item.imageData))
             _processedImageData = State(initialValue: nil)
+            _processedThumbnailData = State(initialValue: item.thumbnailData)
             _selectedImageVersion = State(initialValue: .original)
         }
     }
@@ -244,6 +247,7 @@ struct AddClothingView: View {
         rawImage = image
         selectedImageVersion = .original
         processedImageData = nil
+        processedThumbnailData = nil
         imageProcessingStatus = nil
         isProcessingImage = true
 
@@ -252,6 +256,7 @@ struct AddClothingView: View {
                 let preparedImage = try await appContainer.imageProcessor.prepareImage(from: image)
                 await MainActor.run {
                     processedImageData = preparedImage.data
+                    processedThumbnailData = preparedImage.thumbnailData
                     imageProcessingStatus = preparedImage.didRemoveBackground ? .success : .fallback
                     selectedImageVersion = preparedImage.didRemoveBackground ? .cutout : .original
                     isProcessingImage = false
@@ -259,6 +264,7 @@ struct AddClothingView: View {
             } catch {
                 await MainActor.run {
                     processedImageData = nil
+                    processedThumbnailData = nil
                     imageProcessingStatus = .fallback
                     selectedImageVersion = .original
                     isProcessingImage = false
@@ -268,7 +274,31 @@ struct AddClothingView: View {
     }
 
     private func saveItem() {
-        guard let selectedImageData else { return }
+        guard let selectedImage = previewImage else { return }
+
+        let preserveAlpha = selectedImageVersion == .cutout
+        let selectedAsset: ProcessedClothingImageAsset?
+
+        if preserveAlpha {
+            guard
+                let processedImageData,
+                let processedThumbnailData
+            else {
+                return
+            }
+
+            selectedAsset = ProcessedClothingImageAsset(
+                data: processedImageData,
+                thumbnailData: processedThumbnailData
+            )
+        } else {
+            selectedAsset = appContainer.imageProcessor.makeStorageAsset(
+                from: selectedImage,
+                preserveAlpha: false
+            )
+        }
+
+        guard let selectedAsset else { return }
 
         let tags = tagsText
             .split(separator: ",")
@@ -283,7 +313,8 @@ struct AddClothingView: View {
                 color: color.trimmingCharacters(in: .whitespacesAndNewlines),
                 style: style.trimmingCharacters(in: .whitespacesAndNewlines),
                 location: location.trimmingCharacters(in: .whitespacesAndNewlines),
-                imageData: selectedImageData,
+                imageData: selectedAsset.data,
+                thumbnailData: selectedAsset.thumbnailData,
                 tags: tags,
                 season: season,
                 purchasePrice: Double(purchasePriceText)
@@ -296,7 +327,8 @@ struct AddClothingView: View {
             item.color = color.trimmingCharacters(in: .whitespacesAndNewlines)
             item.style = style.trimmingCharacters(in: .whitespacesAndNewlines)
             item.location = location.trimmingCharacters(in: .whitespacesAndNewlines)
-            item.imageData = selectedImageData
+            item.imageData = selectedAsset.data
+            item.thumbnailData = selectedAsset.thumbnailData
             item.tags = tags
             item.season = season
             item.purchasePrice = Double(purchasePriceText)

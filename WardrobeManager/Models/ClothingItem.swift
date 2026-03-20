@@ -10,6 +10,7 @@ final class ClothingItem {
     var style: String
     var location: String
     @Attribute(.externalStorage) var imageData: Data
+    @Attribute(.externalStorage) var thumbnailData: Data?
     private var tagsRawValue: String
     private var seasonRawValue: String
     var purchasePrice: Double?
@@ -25,6 +26,7 @@ final class ClothingItem {
         style: String,
         location: String,
         imageData: Data,
+        thumbnailData: Data? = nil,
         tags: [String] = [],
         season: Season,
         purchasePrice: Double? = nil,
@@ -39,6 +41,7 @@ final class ClothingItem {
         self.style = style
         self.location = location
         self.imageData = imageData
+        self.thumbnailData = thumbnailData
         self.tagsRawValue = tags.joined(separator: ",")
         self.seasonRawValue = season.rawValue
         self.purchasePrice = purchasePrice

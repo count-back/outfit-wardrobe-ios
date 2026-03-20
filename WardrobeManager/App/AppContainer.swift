@@ -5,6 +5,7 @@ import Observation
 final class AppContainer {
     var selectedTab: AppTab = .wardrobe
     var operationFeedback: OperationFeedback?
+    var pendingOutfitReuse: OutfitReuseRequest?
     let imageProcessor = ClothingImageProcessor()
     let previewComposer = OutfitPreviewComposer()
     let scorer = OutfitScorer()
@@ -26,6 +27,10 @@ final class AppContainer {
         feedbackDismissTask?.cancel()
         operationFeedback = nil
     }
+}
+
+struct OutfitReuseRequest: Equatable {
+    let itemIDs: [UUID]
 }
 
 enum AppTab: Hashable {
