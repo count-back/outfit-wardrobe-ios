@@ -520,6 +520,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.zjy.WardrobeManagerTests;
 				PRODUCT_NAME = WardrobeManagerTests;
 				SDKROOT = iphoneos;
+				SWIFT_MODULE_NAME = WardrobeManagerTests;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WardrobeManager.app/WardrobeManager";
 			};
@@ -539,6 +540,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.zjy.WardrobeManagerTests;
 				PRODUCT_NAME = WardrobeManagerTests;
 				SDKROOT = iphoneos;
+				SWIFT_MODULE_NAME = WardrobeManagerTests;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WardrobeManager.app/WardrobeManager";
 			};

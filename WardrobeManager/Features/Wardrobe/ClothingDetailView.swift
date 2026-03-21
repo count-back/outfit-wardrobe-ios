@@ -4,7 +4,9 @@ import SwiftData
 struct ClothingDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppContainer.self) private var appContainer
     let item: ClothingItem
+    @State private var isPresentingEditSheet = false
     @State private var isShowingDeleteConfirmation = false
 
     var body: some View {
@@ -26,6 +28,11 @@ struct ClothingDetailView: View {
             Button("取消", role: .cancel) {}
         } message: {
             Text("删除后无法恢复。")
+        }
+        .sheet(isPresented: $isPresentingEditSheet) {
+            NavigationStack {
+                AddClothingView(mode: .edit(item))
+            }
         }
     }
 
@@ -57,15 +64,32 @@ struct ClothingDetailView: View {
     private var actionSection: some View {
         SectionCard(title: "操作") {
             VStack(spacing: 12) {
+                Button("编辑信息") {
+                    isPresentingEditSheet = true
+                }
+                .buttonStyle(.bordered)
+
                 Button("今天穿了") {
+                    let previousLastWornDate = item.lastWornDate
+                    let previousWearCount = item.wearCount
                     item.lastWornDate = .now
                     item.wearCount += 1
 
                     do {
                         try modelContext.save()
                     } catch {
-                        assertionFailure("Failed to save wear record: \(error)")
+                        item.lastWornDate = previousLastWornDate
+                        item.wearCount = previousWearCount
+                        appContainer.showOperationFeedback(
+                            OperationFeedback(message: "穿着记录保存失败，请稍后再试。", style: .error),
+                            autoDismissAfter: 3_000_000_000
+                        )
+                        return
                     }
+
+                    appContainer.showOperationFeedback(
+                        OperationFeedback(message: "已记录今天穿了这件单品", style: .success)
+                    )
                 }
                 .buttonStyle(.borderedProminent)
 
@@ -82,9 +106,16 @@ struct ClothingDetailView: View {
 
         do {
             try modelContext.save()
+            appContainer.showOperationFeedback(
+                OperationFeedback(message: "衣物已删除", style: .success)
+            )
             dismiss()
         } catch {
-            assertionFailure("Failed to delete clothing item: \(error)")
+            modelContext.rollback()
+            appContainer.showOperationFeedback(
+                OperationFeedback(message: "删除失败，请稍后再试。", style: .error),
+                autoDismissAfter: 3_000_000_000
+            )
         }
     }
 

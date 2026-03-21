@@ -3,10 +3,34 @@ import SwiftData
 import UIKit
 
 struct AddClothingView: View {
+    enum Mode {
+        case add
+        case edit(ClothingItem)
+
+        var title: String {
+            switch self {
+            case .add:
+                return "添加衣物"
+            case .edit:
+                return "编辑衣物"
+            }
+        }
+
+        var saveButtonTitle: String {
+            switch self {
+            case .add:
+                return "保存"
+            case .edit:
+                return "更新"
+            }
+        }
+    }
+
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(AppContainer.self) private var appContainer
 
+    private let mode: Mode
     @State private var name = ""
     @State private var category: ClothingCategory = .top
     @State private var color = ""
@@ -32,6 +56,43 @@ struct AddClothingView: View {
         !style.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         !location.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
         selectedImageData != nil
+    }
+
+    init(mode: Mode = .add) {
+        self.mode = mode
+
+        switch mode {
+        case .add:
+            _name = State(initialValue: "")
+            _category = State(initialValue: .top)
+            _color = State(initialValue: "")
+            _style = State(initialValue: "")
+            _location = State(initialValue: "")
+            _season = State(initialValue: .allSeason)
+            _tagsText = State(initialValue: "")
+            _purchasePriceText = State(initialValue: "")
+            _rawImage = State(initialValue: nil)
+            _processedImageData = State(initialValue: nil)
+            _processedThumbnailData = State(initialValue: nil)
+            _selectedImageVersion = State(initialValue: .original)
+        case let .edit(item):
+            _name = State(initialValue: item.name)
+            _category = State(initialValue: item.category)
+            _color = State(initialValue: item.color)
+            _style = State(initialValue: item.style)
+            _location = State(initialValue: item.location)
+            _season = State(initialValue: item.season)
+            _tagsText = State(initialValue: item.tags.joined(separator: ", "))
+            if let purchasePrice = item.purchasePrice {
+                _purchasePriceText = State(initialValue: String(purchasePrice))
+            } else {
+                _purchasePriceText = State(initialValue: "")
+            }
+            _rawImage = State(initialValue: UIImage(data: item.imageData))
+            _processedImageData = State(initialValue: nil)
+            _processedThumbnailData = State(initialValue: item.thumbnailData)
+            _selectedImageVersion = State(initialValue: .original)
+        }
     }
 
     var body: some View {
@@ -119,7 +180,7 @@ struct AddClothingView: View {
                     .keyboardType(.decimalPad)
             }
         }
-        .navigationTitle("添加衣物")
+        .navigationTitle(mode.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -129,7 +190,7 @@ struct AddClothingView: View {
             }
 
             ToolbarItem(placement: .topBarTrailing) {
-                Button("保存并继续") {
+                Button(primaryActionTitle) {
                     saveItem()
                 }
                 .disabled(!canSave)
@@ -260,32 +321,74 @@ struct AddClothingView: View {
 
         guard let selectedAsset else { return }
 
-        let item = ClothingItem(
-            name: name.trimmingCharacters(in: .whitespacesAndNewlines),
-            category: category,
-            color: color.trimmingCharacters(in: .whitespacesAndNewlines),
-            style: style.trimmingCharacters(in: .whitespacesAndNewlines),
-            location: location.trimmingCharacters(in: .whitespacesAndNewlines),
-            imageData: selectedAsset.data,
-            thumbnailData: selectedAsset.thumbnailData,
-            tags: tagsText
-                .split(separator: ",")
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { !$0.isEmpty },
-            season: season,
-            purchasePrice: Double(purchasePriceText)
-        )
+        let tags = tagsText
+            .split(separator: ",")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
 
-        modelContext.insert(item)
+        switch mode {
+        case .add:
+            let item = ClothingItem(
+                name: name.trimmingCharacters(in: .whitespacesAndNewlines),
+                category: category,
+                color: color.trimmingCharacters(in: .whitespacesAndNewlines),
+                style: style.trimmingCharacters(in: .whitespacesAndNewlines),
+                location: location.trimmingCharacters(in: .whitespacesAndNewlines),
+                imageData: selectedAsset.data,
+                thumbnailData: selectedAsset.thumbnailData,
+                tags: tags,
+                season: season,
+                purchasePrice: Double(purchasePriceText)
+            )
+
+            modelContext.insert(item)
+        case let .edit(item):
+            item.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            item.category = category
+            item.color = color.trimmingCharacters(in: .whitespacesAndNewlines)
+            item.style = style.trimmingCharacters(in: .whitespacesAndNewlines)
+            item.location = location.trimmingCharacters(in: .whitespacesAndNewlines)
+            item.imageData = selectedAsset.data
+            item.thumbnailData = selectedAsset.thumbnailData
+            item.tags = tags
+            item.season = season
+            item.purchasePrice = Double(purchasePriceText)
+        }
 
         do {
             try modelContext.save()
             errorMessage = nil
-            clearFormForNextItem()
-            saveSuccessMessage = "衣物已保存"
+
+            switch mode {
+            case .add:
+                clearFormForNextItem()
+                saveSuccessMessage = "衣物已保存"
+                appContainer.showOperationFeedback(
+                    OperationFeedback(message: "衣物已保存", style: .success)
+                )
+            case .edit:
+                saveSuccessMessage = nil
+                appContainer.showOperationFeedback(
+                    OperationFeedback(message: "衣物已更新", style: .success)
+                )
+                dismiss()
+            }
         } catch {
             saveSuccessMessage = nil
             errorMessage = "衣物保存失败，请稍后再试。"
+            appContainer.showOperationFeedback(
+                OperationFeedback(message: "衣物保存失败，请稍后再试。", style: .error),
+                autoDismissAfter: 3_000_000_000
+            )
+        }
+    }
+
+    private var primaryActionTitle: String {
+        switch mode {
+        case .add:
+            return "保存并继续"
+        case .edit:
+            return mode.saveButtonTitle
         }
     }
 
