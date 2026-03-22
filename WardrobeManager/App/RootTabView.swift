@@ -4,35 +4,39 @@ struct RootTabView: View {
     @Environment(AppContainer.self) private var appContainer
 
     var body: some View {
-        TabView(selection: Binding(
-            get: { appContainer.selectedTab },
-            set: { appContainer.selectedTab = $0 }
-        )) {
-            NavigationStack {
-                WardrobeListView()
-            }
-            .tabItem {
-                Label("衣柜", systemImage: "square.grid.2x2")
-            }
-            .tag(AppTab.wardrobe)
+        ZStack(alignment: .bottom) {
+            TabView(selection: Binding(
+                get: { appContainer.selectedTab },
+                set: { appContainer.selectedTab = $0 }
+            )) {
+                NavigationStack {
+                    WardrobeListView()
+                }
+                .toolbar(.hidden, for: .tabBar)
+                .tag(AppTab.wardrobe)
 
-            NavigationStack {
-                OutfitBuilderView()
-            }
-            .tabItem {
-                Label("搜配", systemImage: "sparkles.rectangle.stack")
-            }
-            .tag(AppTab.outfit)
+                NavigationStack {
+                    OutfitBuilderView()
+                }
+                .toolbar(.hidden, for: .tabBar)
+                .tag(AppTab.outfit)
 
-            NavigationStack {
-                OutfitHistoryView()
+                NavigationStack {
+                    OutfitHistoryView()
+                }
+                .toolbar(.hidden, for: .tabBar)
+                .tag(AppTab.history)
             }
-            .tabItem {
-                Label("记录", systemImage: "clock.arrow.circlepath")
-            }
-            .tag(AppTab.history)
+            .tint(AtelierTheme.primary)
+            .atelierPageBackground()
+
+            AtelierTabBar(selectedTab: Binding(
+                get: { appContainer.selectedTab },
+                set: { appContainer.selectedTab = $0 }
+            ))
+            .padding(.horizontal, 18)
+            .padding(.bottom, 8)
         }
-        .tint(.accentColor)
         .overlay(alignment: .top) {
             if let feedback = appContainer.operationFeedback {
                 OperationFeedbackBanner(feedback: feedback)
@@ -64,7 +68,7 @@ private struct OperationFeedbackBanner: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 12)
         .background(backgroundColor, in: Capsule())
-        .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
+        .shadow(color: AtelierTheme.shadow, radius: 16, y: 8)
         .padding(.horizontal, 16)
         .padding(.top, 12)
     }
@@ -72,9 +76,50 @@ private struct OperationFeedbackBanner: View {
     private var backgroundColor: Color {
         switch feedback.style {
         case .success:
-            return Color.green.opacity(0.95)
+            return AtelierTheme.primary.opacity(0.96)
         case .error:
-            return Color.red.opacity(0.95)
+            return Color(red: 0.68, green: 0.25, blue: 0.15).opacity(0.96)
         }
+    }
+}
+
+private struct AtelierTabBar: View {
+    @Binding var selectedTab: AppTab
+
+    var body: some View {
+        HStack {
+            tabItem(title: "CLOSET", icon: "hanger", tab: .wardrobe)
+            Spacer()
+            tabItem(title: "MIX & MATCH", icon: "figure.stand", tab: .outfit)
+            Spacer()
+            tabItem(title: "JOURNAL", icon: "book.closed", tab: .history)
+        }
+        .padding(.horizontal, 28)
+        .padding(.vertical, 16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 40, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 40, style: .continuous)
+                .fill(AtelierTheme.surface.opacity(0.72))
+                .allowsHitTesting(false)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
+        .shadow(color: AtelierTheme.shadow, radius: 24, y: 12)
+    }
+
+    private func tabItem(title: String, icon: String, tab: AppTab) -> some View {
+        Button {
+            selectedTab = tab
+        } label: {
+            VStack(spacing: 5) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: selectedTab == tab ? .semibold : .regular))
+                Text(title)
+                    .font(.system(size: 9, weight: .semibold, design: .rounded))
+                    .tracking(0.8)
+            }
+            .foregroundStyle(selectedTab == tab ? AtelierTheme.primary : AtelierTheme.tertiary.opacity(0.7))
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.plain)
     }
 }

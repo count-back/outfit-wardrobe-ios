@@ -5,17 +5,15 @@ struct SectionCard<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(title)
-                .font(.headline)
+        VStack(alignment: .leading, spacing: 14) {
+            Text(title.uppercased())
+                .font(.system(.caption2, design: .rounded, weight: .bold))
+                .tracking(1.2)
+                .foregroundStyle(AtelierTheme.tertiary)
 
             content
         }
-        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color(.secondarySystemBackground))
-        )
+        .atelierCard(background: AtelierTheme.surfaceLow)
     }
 }

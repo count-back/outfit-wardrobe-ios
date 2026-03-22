@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0DF5FB19FE47A2F0E97FBA6A /* WardrobeListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E20D64D6E5A289603C1014 /* WardrobeListView.swift */; };
+		A1B2C3D4E5F60718293A4B5C /* AtelierTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5061728394A5B6C /* AtelierTheme.swift */; };
 		13EF6BC7C8829C13D014AFF5 /* Data+Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF5DDA2D7698A7F9AC7A346A /* Data+Image.swift */; };
 		1A5CFB56F44895D53B5B9FEC /* OutfitScore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58D0ED335F72FB6D62EA6FA2 /* OutfitScore.swift */; };
 		1E0DDBFFE4FF71B7ED0BB4BD /* ClothingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 147BDFE019467F2DAEAF286F /* ClothingCard.swift */; };
@@ -67,6 +68,7 @@
 		7989B680C9AE5E19EFFD4A4B /* OutfitBuilderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutfitBuilderView.swift; sourceTree = "<group>"; };
 		80E20D64D6E5A289603C1014 /* WardrobeListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WardrobeListView.swift; sourceTree = "<group>"; };
 		8E20DBC46317736F0F5D04C1 /* SectionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionCard.swift; sourceTree = "<group>"; };
+		B1C2D3E4F5061728394A5B6C /* AtelierTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtelierTheme.swift; sourceTree = "<group>"; };
 		9016E080BCAC35DB84C23F7E /* AddClothingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddClothingView.swift; sourceTree = "<group>"; };
 		94D1D0B77B1EB172393D91C4 /* OutfitScorer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutfitScorer.swift; sourceTree = "<group>"; };
 		9526C14B0F3490AC2D1ECCDF /* ImagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePicker.swift; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 		10E7B017EB59CB06F410153A /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				C1D2E3F40516273849A5B6C7 /* Design */,
 				714A14EB6874E219CEEE4A2B /* Components */,
 				D14B64EEDA9B3678CFA21256 /* Extensions */,
 			);
@@ -139,6 +142,14 @@
 				8E20DBC46317736F0F5D04C1 /* SectionCard.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		C1D2E3F40516273849A5B6C7 /* Design */ = {
+			isa = PBXGroup;
+			children = (
+				B1C2D3E4F5061728394A5B6C /* AtelierTheme.swift */,
+			);
+			path = Design;
 			sourceTree = "<group>";
 		};
 		79EF02CBB5BF8867A5391E8D /* History */ = {
@@ -337,6 +348,7 @@
 				87CCD97DE7312BE224E5243A /* ScoreMetricCard.swift in Sources */,
 				8D709E187FED6C40183BEA0F /* Season.swift in Sources */,
 				FE88529A150E9F80EE0F7264 /* SectionCard.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5C /* AtelierTheme.swift in Sources */,
 				0DF5FB19FE47A2F0E97FBA6A /* WardrobeListView.swift in Sources */,
 				E62A3367614F22A938A377AF /* WardrobeManagerApp.swift in Sources */,
 			);

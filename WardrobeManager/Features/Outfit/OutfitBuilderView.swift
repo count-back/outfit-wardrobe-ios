@@ -30,21 +30,46 @@ struct OutfitBuilderView: View {
         generatedPreviewImageData != nil && generatedSystemScore != nil
     }
 
+    private var liveScore: OutfitScore? {
+        guard canGeneratePreview else { return nil }
+        return appContainer.scorer.score(items: selectedItems)
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                selectionSection
-                sceneSection
-                previewSection
-                if let generatedSystemScore {
-                    scoreSection(score: generatedSystemScore)
+        ZStack(alignment: .bottomTrailing) {
+            atelierBackground
+
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 22) {
+                    topChrome
+                    workspaceHeader
+                    selectionStack
+                    harmonyScoreCard
+                    actionButtons
+                    journalDetails
                 }
-                saveSection
+                .padding(.horizontal, 20)
+                .padding(.top, 10)
+                .padding(.bottom, 124)
             }
-            .padding()
         }
-        .background(Color(.systemGroupedBackground))
-        .navigationTitle("搜配")
+        .tint(Color.atelierPrimary)
+        .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
+        .overlay(alignment: .bottomTrailing) {
+            Button {
+                pickerCategory = .accessory
+            } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: 56, height: 56)
+                    .background(Color.atelierPrimary, in: Circle())
+                    .shadow(color: Color.black.opacity(0.18), radius: 16, x: 0, y: 10)
+            }
+            .padding(.trailing, 24)
+            .padding(.bottom, 108)
+        }
         .sheet(item: $pickerCategory) { category in
             NavigationStack {
                 ClothingSelectorView(
@@ -70,223 +95,296 @@ struct OutfitBuilderView: View {
         }
     }
 
-    private var selectionSection: some View {
-        SectionCard(title: "单品选择") {
-            VStack(spacing: 12) {
-                selectionRow(title: "上衣", item: topItem, category: .top, required: true)
-                selectionRow(title: "下装", item: bottomItem, category: .pants, alternateCategories: [.pants, .skirt], required: true)
-                selectionRow(title: "外套", item: outerwearItem, category: .outerwear, required: false)
-                selectionRow(title: "鞋子", item: shoesItem, category: .shoes, required: false)
-                selectionRow(title: "配件", item: accessoryItem, category: .accessory, required: false)
+    private var atelierBackground: some View {
+        ZStack {
+            Color.atelierBackground
+                .ignoresSafeArea()
+
+            LinearGradient(
+                colors: [
+                    Color.white.opacity(0.45),
+                    Color.atelierBackground.opacity(0.0)
+                ],
+                startPoint: .top,
+                endPoint: .center
+            )
+            .ignoresSafeArea()
+        }
+    }
+
+    private var topChrome: some View {
+        ZStack {
+            HStack {
+                Circle()
+                    .fill(Color(red: 0.96, green: 0.88, blue: 0.80))
+                    .frame(width: 30, height: 30)
+                    .overlay {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(Color(red: 0.42, green: 0.32, blue: 0.25))
+                    }
+
+                Spacer()
+
+                HStack(spacing: 14) {
+                    iconButton(systemName: "magnifyingglass")
+                    iconButton(systemName: "bell")
+                }
+            }
+
+            Text("Digital Atelier")
+                .font(.system(size: 18, weight: .bold, design: .default))
+                .foregroundStyle(Color.atelierPrimary)
+                .tracking(-0.2)
+        }
+        .padding(.top, 4)
+    }
+
+    private var workspaceHeader: some View {
+        VStack(spacing: 6) {
+            Text("CURATION MODE")
+                .font(.system(size: 10, weight: .semibold))
+                .tracking(3.2)
+                .foregroundStyle(Color.atelierSecondary)
+
+            Text("Mix & Match")
+                .font(.system(size: 31, weight: .heavy, design: .default))
+                .foregroundStyle(Color.atelierText)
+                .tracking(-1.1)
+                .multilineTextAlignment(.center)
+
+            Text("Compose your signature look for the season.")
+                .font(.system(size: 12, weight: .regular))
+                .foregroundStyle(Color.atelierSubtext)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 4)
+    }
+
+    private var selectionStack: some View {
+        VStack(spacing: 10) {
+            SelectionLayerCard(
+                title: "Outerwear",
+                item: outerwearItem,
+                placeholderTitle: "Sage Wool Overcoat",
+                placeholderSubtitle: "Tap to choose outerwear",
+                isRequired: false,
+                action: { pickerCategory = .outerwear }
+            )
+            selectionConnector
+            SelectionLayerCard(
+                title: "Top",
+                item: topItem,
+                placeholderTitle: "Pima Cotton Tee",
+                placeholderSubtitle: "Tap to choose a top",
+                isRequired: false,
+                action: { pickerCategory = .top }
+            )
+            selectionConnector
+            SelectionLayerCard(
+                title: "Bottom",
+                item: bottomItem,
+                placeholderTitle: "Relaxed Linen Chino",
+                placeholderSubtitle: "Tap to choose bottoms",
+                isRequired: false,
+                action: { pickerCategory = .pants }
+            )
+            if let accessoryItem {
+                SelectionLayerCard(
+                    title: "Accessory",
+                    item: accessoryItem,
+                    placeholderTitle: accessoryItem.name,
+                    placeholderSubtitle: accessoryItem.style,
+                    isRequired: false,
+                    action: { pickerCategory = .accessory }
+                )
+            } else {
+                accessorySlot
             }
         }
     }
 
-    private var previewSection: some View {
-        SectionCard(title: "穿搭预览") {
-            VStack(spacing: 16) {
-                ZStack {
+    private var accessorySlot: some View {
+        Button {
+            pickerCategory = .accessory
+        } label: {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .strokeBorder(Color.atelierOutline.opacity(0.22), style: StrokeStyle(lineWidth: 1.4, dash: [7, 7]))
+                .background(
                     RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color(red: 0.95, green: 0.94, blue: 0.92), Color(red: 0.90, green: 0.92, blue: 0.97)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(height: 430)
+                        .fill(Color.atelierSurfaceOverlay.opacity(0.45))
+                )
+                .frame(height: 96)
+                .overlay {
+                    VStack(spacing: 8) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundStyle(Color.atelierOutline)
 
-                    if let generatedPreviewImageData, let image = UIImage(data: generatedPreviewImageData) {
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack {
-                                Text("上身预览")
-                                    .font(.caption.weight(.semibold))
-                                    .foregroundStyle(.secondary)
-                                Spacer()
-                                Text("Try-on")
-                                    .font(.caption2.weight(.semibold))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(Color.white.opacity(0.7), in: Capsule())
-                            }
-
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFit()
-
-                            Text("选品发生变化后，需要重新生成穿搭预览。")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(16)
-                    } else {
-                        VStack(spacing: 12) {
-                            Image(systemName: "square.stack.3d.up")
-                                .font(.system(size: 44))
-                                .foregroundStyle(.secondary)
-                            Text("先选好上衣和下装，再生成穿搭预览。")
-                                .font(.headline)
-                            Text("这一步会按人体部位生成上身效果预览，不再使用拼贴画板样式。")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                        }
-                        .padding(.horizontal, 28)
+                        Text("ADD ACCESSORIES")
+                            .font(.system(size: 9, weight: .semibold))
+                            .tracking(2.6)
+                            .foregroundStyle(Color.atelierSubtext)
                     }
                 }
+        }
+        .buttonStyle(.plain)
+    }
 
-                Button(hasGeneratedPreview ? "重新生成穿搭预览" : "生成穿搭预览") {
+    private var selectionConnector: some View {
+        ZStack {
+            Rectangle()
+                .fill(Color.clear)
+                .frame(height: 4)
+
+            Circle()
+                .fill(Color.atelierPrimary)
+                .frame(width: 18, height: 18)
+                .shadow(color: Color.black.opacity(0.10), radius: 4, x: 0, y: 2)
+                .overlay {
+                    Image(systemName: "link")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+        }
+        .padding(.vertical, 2)
+    }
+
+    private var harmonyScoreCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .center, spacing: 10) {
+                Image(systemName: "sparkles")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(Color.atelierTertiaryInk)
+
+                Text("Harmony Score")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(Color.atelierTertiaryInk)
+
+                Spacer()
+
+                scoreBadge
+            }
+
+            Text(scoreComment)
+                .font(.system(size: 12, weight: .regular))
+                .foregroundStyle(Color.atelierTertiaryInk)
+                .lineLimit(3)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
+        .background(Color.atelierScoreCard, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .shadow(color: Color.black.opacity(0.05), radius: 12, x: 0, y: 6)
+    }
+
+    private var scoreBadge: some View {
+        Text("\(scoreTotal)/100")
+            .font(.system(size: 13, weight: .bold))
+            .foregroundStyle(Color.atelierScoreBadgeText)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Color.atelierScoreBadge, in: Capsule())
+    }
+
+    private var scoreTotal: Int {
+        liveScore?.total ?? 85
+    }
+
+    private var scoreComment: String {
+        "Colors coordinate beautifully for Autumn. Sage and beige provide an earthy base, while white adds structure."
+    }
+
+    private var actionButtons: some View {
+        VStack(spacing: 10) {
+            Button {
+                generatePreview()
+            } label: {
+                Text("Wore This Today")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(Color.atelierPrimaryGradient, in: Capsule())
+                    .shadow(color: Color.atelierPrimary.opacity(0.16), radius: 12, x: 0, y: 7)
+            }
+            .buttonStyle(.plain)
+            .disabled(!canGeneratePreview)
+            .opacity(canGeneratePreview ? 1 : 0.55)
+
+            Button {
+                if !hasGeneratedPreview {
                     generatePreview()
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(!canGeneratePreview)
+                saveOutfit()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "book.closed")
+                        .font(.system(size: 12, weight: .semibold))
+
+                    Text("Save to Journal")
+                        .font(.system(size: 14, weight: .bold))
+                }
+                .foregroundStyle(Color.atelierText)
+                .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                .background(Color.atelierSurfaceHigh, in: Capsule())
             }
+            .buttonStyle(.plain)
+            .disabled(!canGeneratePreview)
+            .opacity(canGeneratePreview ? 1 : 0.6)
         }
+        .padding(.top, 2)
     }
 
-    private func scoreSection(score: OutfitScore) -> some View {
-        SectionCard(title: "评分分析") {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("\(editableScore)")
-                        .font(.system(size: 44, weight: .bold))
-                    ScoreBadge(label: OutfitScore.summary(for: editableScore).label)
-                    Spacer()
-                }
+    private var journalDetails: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Journal Notes")
+                .font(.system(size: 10, weight: .semibold))
+                .tracking(2.4)
+                .foregroundStyle(Color.atelierSecondary)
 
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Text("系统默认")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text("\(score.total) 分")
-                            .font(.subheadline.weight(.semibold))
-                    }
-
-                    HStack {
-                        Text("最终保存")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                        Spacer()
-                        Text("\(editableScore) 分")
-                            .font(.subheadline.weight(.semibold))
-                    }
-
-                    Slider(
-                        value: Binding(
-                            get: { Double(editableScore) },
-                            set: { editableScore = Int($0.rounded()) }
-                        ),
-                        in: 0...100,
-                        step: 1
-                    )
-
-                    HStack {
-                        Button(" -5 ") {
-                            editableScore = max(0, editableScore - 5)
-                        }
-                        .buttonStyle(.bordered)
-
-                        Button(" +5 ") {
-                            editableScore = min(100, editableScore + 5)
-                        }
-                        .buttonStyle(.bordered)
-
-                        Spacer()
-
-                        Text("当前保存分数：\(editableScore)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-                Text("软件先给系统默认分，你可以按自己的判断调整最终保存分数。")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-            }
-        }
-    }
-
-    private var saveSection: some View {
-        SectionCard(title: "保存记录") {
             VStack(alignment: .leading, spacing: 10) {
-                Text("保存后会记录预览图、得分和单品快照，方便第二天直接参考。")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                TextField("Scene, e.g. weekend date / commute", text: $sceneText)
+                    .font(.system(size: 14, weight: .regular))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(Color.atelierInput, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
 
-                Button("保存搜配记录") {
-                    saveOutfit()
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(!hasGeneratedPreview)
-            }
-        }
-    }
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: $notesText)
+                        .frame(minHeight: 104)
+                        .scrollContentBackground(.hidden)
+                        .padding(10)
+                        .background(Color.atelierInput, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
 
-    private var sceneSection: some View {
-        SectionCard(title: "场景与备注") {
-            VStack(alignment: .leading, spacing: 12) {
-                TextField("场景，例如：周末约会 / 通勤上班", text: $sceneText)
-                    .textFieldStyle(.roundedBorder)
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("备注")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-
-                    ZStack(alignment: .topLeading) {
-                        TextEditor(text: $notesText)
-                            .frame(minHeight: 110)
-                            .padding(4)
-
-                        if notesText.isEmpty {
-                            Text("例如：需要搭配浅色包包，或者下次试试加外套。")
-                                .foregroundStyle(.secondary.opacity(0.7))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 12)
-                                .allowsHitTesting(false)
-                        }
+                    if notesText.isEmpty {
+                        Text("例如：需要搭配浅色包包，或者下次试试加外套。")
+                            .font(.system(size: 13, weight: .regular))
+                            .foregroundStyle(Color.atelierSubtext.opacity(0.8))
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 22)
+                            .allowsHitTesting(false)
                     }
-                    .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
 
-                Text("场景会作为这套穿搭的标题优先展示，备注只保存不占标题位。")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                Text("The notes stay attached to this outfit for later reuse.")
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(Color.atelierSubtext)
             }
+            .padding(16)
+            .background(Color.atelierSurfaceLow, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         }
+        .padding(.top, 2)
     }
 
-    private func selectionRow(
-        title: String,
-        item: ClothingItem?,
-        category: ClothingCategory,
-        alternateCategories: [ClothingCategory] = [],
-        required: Bool
-    ) -> some View {
+    private func iconButton(systemName: String) -> some View {
         Button {
-            pickerCategory = category == .pants && !alternateCategories.isEmpty ? .pants : category
         } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title + (required ? " *" : ""))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Text(item?.name ?? "点击选择")
-                        .font(.headline)
-                        .foregroundStyle(item == nil ? .secondary : .primary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .foregroundStyle(.tertiary)
-            }
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(item == nil ? Color.secondary.opacity(0.3) : Color.accentColor.opacity(0.3), style: StrokeStyle(lineWidth: 1.2, dash: item == nil ? [5] : []))
-                    .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-            )
+            Image(systemName: systemName)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(Color.atelierSubtext)
+                .frame(width: 28, height: 28)
         }
         .buttonStyle(.plain)
     }
@@ -367,6 +465,7 @@ struct OutfitBuilderView: View {
         let value = notesText.trimmingCharacters(in: .whitespacesAndNewlines)
         return value.isEmpty ? nil : value
     }
+
     private func applyPendingReuseIfNeeded() {
         guard let request = appContainer.pendingOutfitReuse else { return }
 
@@ -388,4 +487,109 @@ struct OutfitBuilderView: View {
         editableScore = 0
         appContainer.pendingOutfitReuse = nil
     }
+}
+
+private struct SelectionLayerCard: View {
+    let title: String
+    let item: ClothingItem?
+    let placeholderTitle: String
+    let placeholderSubtitle: String
+    let isRequired: Bool
+    let action: () -> Void
+
+    var body: some View {
+        HStack(spacing: 14) {
+            preview
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title.uppercased())
+                    .font(.system(size: 9, weight: .semibold))
+                    .tracking(2.2)
+                    .foregroundStyle(Color.atelierSubtext)
+
+                Text(item?.name ?? placeholderTitle)
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(Color.atelierText)
+                    .lineLimit(1)
+
+                HStack(spacing: 8) {
+                    Button(action: action) {
+                        Text("Change")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(Color.atelierText)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                            .background(Color.atelierSurfaceHigh, in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+
+                    Button(action: action) {
+                        Image(systemName: "ellipsis")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Color.atelierText)
+                            .frame(width: 30, height: 30)
+                            .background(Color.atelierSurfaceLow, in: Circle())
+                            .overlay(Circle().stroke(Color.atelierOutline, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.top, 2)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, minHeight: 96, alignment: .leading)
+        .background(Color.atelierSurfaceLow, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .shadow(color: Color.black.opacity(0.035), radius: 12, x: 0, y: 6)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: action)
+    }
+
+    private var preview: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.atelierSurfaceLowest)
+                .frame(width: 76, height: 96)
+                .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+
+            if let image = item?.thumbnailData?.swiftUIImage ?? item?.imageData.swiftUIImage {
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .padding(6)
+            } else {
+                Image(systemName: "photo")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(Color.atelierSubtext.opacity(0.75))
+            }
+        }
+    }
+}
+
+private extension Color {
+    static let atelierBackground = Color(red: 0.989, green: 0.984, blue: 0.969)
+    static let atelierSurfaceLow = Color(red: 0.985, green: 0.978, blue: 0.965)
+    static let atelierSurfaceOverlay = Color(red: 0.996, green: 0.992, blue: 0.982)
+    static let atelierSurfaceHigh = Color(red: 0.941, green: 0.930, blue: 0.903)
+    static let atelierSurfaceLowest = Color.white
+    static let atelierPrimary = Color(red: 0.353, green: 0.412, blue: 0.321)
+    static let atelierPrimaryDim = Color(red: 0.306, green: 0.361, blue: 0.278)
+    static let atelierPrimaryGradient = LinearGradient(
+        colors: [
+            Color(red: 0.353, green: 0.412, blue: 0.321),
+            Color(red: 0.306, green: 0.361, blue: 0.278)
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    static let atelierSecondary = Color(red: 0.508, green: 0.353, blue: 0.353)
+    static let atelierText = Color(red: 0.223, green: 0.221, blue: 0.204)
+    static let atelierSubtext = Color(red: 0.401, green: 0.396, blue: 0.372)
+    static let atelierOutline = Color(red: 0.706, green: 0.693, blue: 0.662)
+    static let atelierInput = Color(red: 0.926, green: 0.917, blue: 0.884)
+    static let atelierScoreCard = Color(red: 0.969, green: 0.899, blue: 0.770)
+    static let atelierScoreBadge = Color(red: 0.486, green: 0.428, blue: 0.294)
+    static let atelierScoreBadgeText = Color(red: 0.972, green: 0.949, blue: 0.910)
+    static let atelierTertiaryInk = Color(red: 0.396, green: 0.336, blue: 0.272)
 }
